@@ -67,6 +67,7 @@ module privateDnsZones 'privateDnsZone.bicep' = [for dnsZoneConfig in dnsZoneCon
 module hubVirtualNetworks 'virtualNetwork.bicep' = [for vnet in hubNetworks: {
   name: format('vnetRes-{0}', vnet.name)
   params: {
+    name: vnet.name
     location: location
     tags: tags
     vnetAddressPrefix: vnet.addressPrefixes
@@ -77,6 +78,7 @@ module hubVirtualNetworks 'virtualNetwork.bicep' = [for vnet in hubNetworks: {
 module spokeVirtualNetworks 'virtualNetwork.bicep' = [for vnet in spokeNetworks: {
   name: format('vnetRes-{0}', vnet.name)
   params: {
+    name: vnet.name
     location: location
     tags: tags
     vnetAddressPrefix: vnet.addressPrefixes
@@ -94,7 +96,7 @@ module associateToSpokeNetwork 'associatePrivateDns.bicep' = [for vnet in spokeN
     vnetResourceGroupName: vnet.resourceGroupName
     location: 'global'
   }
-  scope: resourceGroup(vnet.resourceGroupName)
+  scope: resourceGroup(dnsZoneResourceGroupName)
 }]
 
 module associateToHubNetwork 'associatePrivateDns.bicep' = [for vnet in hubNetworks: {
@@ -106,5 +108,5 @@ module associateToHubNetwork 'associatePrivateDns.bicep' = [for vnet in hubNetwo
     tags: tags
     location: 'global'
   }
-  scope: resourceGroup(vnet.resourceGroupName)
+  scope: resourceGroup(dnsZoneResourceGroupName)
 }]

@@ -1,5 +1,5 @@
 param location string = 'global'
-param name string = 'hub-lab'
+param name string
 param tags object = {
   environment: 'lab'
   project: 'hub-and-spoke'

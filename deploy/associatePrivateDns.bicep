@@ -5,7 +5,7 @@ param tags object
 param location string = 'global'
 
 module pDnsAssociation 'privateDnsLink.bicep' = [for dnsZone in dnsZoneConfig: {
-  name: format('{0}-{1}', dnsZone, 'privateDnsLink')
+  name: format('{0}-{1}', dnsZone.name, 'privateDnsLink')
   params:{
     location: location
     pdnsName: dnsZone.name
