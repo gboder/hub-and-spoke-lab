@@ -13,7 +13,7 @@ param subnetConfig array = [
 ]
 
 resource vnetResource 'Microsoft.Network/virtualNetworks@2022-11-01' = {
-  name: name
+  name: format('vnet-{0}', name)
   tags: tags
   location: location
   resource DefaultSubnet 'subnets' existing = {
