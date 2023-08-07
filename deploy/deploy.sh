@@ -5,7 +5,8 @@ RESOURCE_GROUPS=($RESOURCE_GROUP "rg-hubandspoke-spoke-devvms-lab" "rg-hubandspo
 # iterate over the array elements
 for i in "${RESOURCE_GROUPS[@]}"
 do
-  az group delete --name $i --yes
+# Uncomment to delete resource groups if you've to drop some earlier deployments - might be needed only in case the resources are extremely renamed
+#   az group delete --name $i --yes
   az group create --name $i --location switzerlandnorth
 done
 
