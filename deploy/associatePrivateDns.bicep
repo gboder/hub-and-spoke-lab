@@ -14,4 +14,5 @@ module pDnsAssociation 'privateDnsLink.bicep' = [for dnsZone in dnsZoneConfig: {
     vnetName: vnetName
     tags: tags
   }
+  scope: resourceGroup(dnsZone.resourceGroupName)
 }]

@@ -5,17 +5,30 @@ var tags = {
 }
 var dnsZoneConfig = [
   {
-  name: 'privatelink.azurewebsites.net'
-  registrationEnabled: false
+    name: 'privatelink.azurewebsites.net'
+    registrationEnabled: false
+    resourceGroupName: hubNetworks[0].resourceGroupName
   }
   {
-  name: 'hub-spoke.lab'
-  registrationEnabled: true
+    name: format('privatelink{1}', 'sqlserver', environment().suffixes.sqlServerHostname)
+    registrationEnabled: false
+    resourceGroupName: hubNetworks[0].resourceGroupName
+  }
+  // private link for keyvault
+  {
+    name: format('privatelink{1}', 'vault', environment().suffixes.keyvaultDns)
+    registrationEnabled: false
+    resourceGroupName: hubNetworks[0].resourceGroupName
+  }
+  {
+    name: 'hub-spoke-lab.local'
+    registrationEnabled: true
+    resourceGroupName: hubNetworks[0].resourceGroupName
   }
 ]
 var hubNetworks = [
   {
-    name: 'vnet-hub-lab'
+    vnetNameSuffix: 'hub-lab'
     resourceGroupName: 'rg-hubandspoke-hub-lab'
     addressPrefixes: [ '10.0.0.0/16' ]
     subnets: [
@@ -28,7 +41,7 @@ var hubNetworks = [
 ]
 var spokeNetworks = [
   {
-    name: 'vnet-devvms-lab'
+    vnetNameSuffix: 'devvms-lab'
     resourceGroupName: 'rg-hubandspoke-spoke-devvms-lab'
     addressPrefixes: [ '10.1.0.0/16' ]
     subnets: [
@@ -39,7 +52,7 @@ var spokeNetworks = [
     ]
   }
   {
-    name: 'vnet-app-lab'
+    vnetNameSuffix: 'app-lab'
     resourceGroupName: 'rg-hubandspoke-spoke-app-lab'
     addressPrefixes: [ '10.2.0.0/16' ]
     subnets: [
@@ -52,7 +65,7 @@ var spokeNetworks = [
 ]
 
 // Private DNS zone for app service
-var dnsZoneResourceGroupName = resourceGroup().name
+var dnsZoneResourceGroupName = hubNetworks[0].resourceGroupName
 module privateDnsZones 'privateDnsZone.bicep' = [for dnsZoneConfig in dnsZoneConfig: {
   name: format('pdnsZoneRes-{0}', dnsZoneConfig.name)
   params: {
@@ -63,11 +76,10 @@ module privateDnsZones 'privateDnsZone.bicep' = [for dnsZoneConfig in dnsZoneCon
   scope: resourceGroup(dnsZoneResourceGroupName)
 }]
 
-
 module hubVirtualNetworks 'virtualNetwork.bicep' = [for vnet in hubNetworks: {
-  name: format('vnetRes-{0}', vnet.name)
+  name: format('vnetRes-{0}', vnet.vnetNameSuffix)
   params: {
-    name: vnet.name
+    name: vnet.vnetNameSuffix
     location: location
     tags: tags
     vnetAddressPrefix: vnet.addressPrefixes
@@ -76,9 +88,9 @@ module hubVirtualNetworks 'virtualNetwork.bicep' = [for vnet in hubNetworks: {
   scope: resourceGroup(vnet.resourceGroupName)
 }]
 module spokeVirtualNetworks 'virtualNetwork.bicep' = [for vnet in spokeNetworks: {
-  name: format('vnetRes-{0}', vnet.name)
+  name: format('vnetRes-{0}', vnet.vnetNameSuffix)
   params: {
-    name: vnet.name
+    name: vnet.vnetNameSuffix
     location: location
     tags: tags
     vnetAddressPrefix: vnet.addressPrefixes
@@ -88,25 +100,23 @@ module spokeVirtualNetworks 'virtualNetwork.bicep' = [for vnet in spokeNetworks:
 }]
 
 module associateToSpokeNetwork 'associatePrivateDns.bicep' = [for vnet in spokeNetworks: {
-  name: format('dnsToVnetLink-{0}', vnet.name)
+  name: format('dnsToVnetLink-{0}', vnet.vnetNameSuffix)
   params: {
     tags: tags
     dnsZoneConfig: dnsZoneConfig
-    vnetName: vnet.name
+    vnetName: vnet.vnetNameSuffix
     vnetResourceGroupName: vnet.resourceGroupName
     location: 'global'
   }
-  scope: resourceGroup(dnsZoneResourceGroupName)
 }]
 
 module associateToHubNetwork 'associatePrivateDns.bicep' = [for vnet in hubNetworks: {
-  name: format('dnsToVnetLink-{0}', vnet.name)
+  name: format('dnsToVnetLink-{0}', vnet.vnetNameSuffix)
   params: {
     dnsZoneConfig: dnsZoneConfig
     vnetResourceGroupName: vnet.resourceGroupName
-    vnetName: vnet.name
+    vnetName: vnet.vnetNameSuffix
     tags: tags
     location: 'global'
   }
-  scope: resourceGroup(dnsZoneResourceGroupName)
 }]

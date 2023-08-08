@@ -10,6 +10,7 @@ do
   az group create --name $i --location switzerlandnorth
 done
 
-az deployment group validate --resource-group $RESOURCE_GROUP --template-file main.bicep
-az deployment group what-if --resource-group $RESOURCE_GROUP --template-file main.bicep
+# az deployment group validate --resource-group $RESOURCE_GROUP --template-file main.bicep
+# az deployment group what-if --resource-group $RESOURCE_GROUP --template-file main.bicep
 az deployment group create --resource-group $RESOURCE_GROUP --template-file main.bicep --name main_$RANDOM
+```

@@ -10,7 +10,7 @@ resource pDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
 }
 
 resource vnetResource 'Microsoft.Network/virtualNetworks@2022-11-01' existing = {
-  name: vnetName
+  name: format('vnet-{0}', vnetName)
   scope: resourceGroup(vnetResourceGroupName)
 }
 
